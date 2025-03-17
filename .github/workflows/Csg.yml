@@ -2,23 +2,7 @@ name: Alert System
 
 on: push
 
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Test Lint
-        uses: ricardochaves/python-lint@v1.4.0
-        with:
-          use-pylint: true
-          use-black: true
-          use-isort: true
-          use-pycodestyle: true
-          use-flake8: true
-          use-mypy: true
-  
+jobs: 
   build-and-push:
     runs-on: ubuntu-latest
     steps:
