@@ -10,8 +10,8 @@ def send_email(event, email: str) -> None:
     email_password = 'bdvj oexx rgeg epkf'
     email_receiver = email
 
-    subject = 'Stock Update'
-    body = event
+    subject = 'Update'
+    body = str(event)
 
     em = EmailMessage()
     em['From'] = email_sender
@@ -25,7 +25,7 @@ def send_email(event, email: str) -> None:
         smtp.sendmail(email_sender, email_receiver, em.as_string())
 
     print("Email sent successfully")
-    
+
 
 def lambda_handler(event, context) -> dict:
 
