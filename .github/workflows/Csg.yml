@@ -1,0 +1,39 @@
+name: Alert System
+
+on: push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Test Lint
+        uses: ricardochaves/python-lint@v1.4.0
+        with:
+          use-pylint: true
+          use-black: true
+          use-isort: true
+          use-pycodestyle: true
+          use-flake8: true
+          use-mypy: true
+  
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to ECR
+        uses: docker/login-action@v3
+        with:
+          registry: 345594560649.dkr.ecr.us-east-1.amazonaws.com
+          username: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Build Docker image
+        run: docker build -t 345594560649.dkr.ecr.us-east-1.amazonaws.com/alert-repo:latest .
+
+      - name: Push Docker image to ECR
+        run: docker push 345594560649.dkr.ecr.us-east-1.amazonaws.com/alert-repo:latest
