@@ -33,6 +33,17 @@ def extract_key(key_val, body_content):
 
     return key
 
+def input_doc_to_MongoDB(document):
+
+    db = CLIENT['db1'] 
+    collection = db['cl1']  
+
+    document = parse_event(document)
+
+    result = collection.insert_one(document)
+
+    print(f"Document inserted with ID: {result.inserted_id}")
+
 def parse_event(input_string):
     pattern = r"'body': '{(.*?)}'"
     
@@ -49,25 +60,17 @@ def parse_event(input_string):
         ticker = extract_key("Ticker", body_content)
         price = extract_key("Price", body_content)
 
-        return {"Signal": signal, 
+        document = {"Signal": signal, 
                 "Time": time,
                 "Ticker": ticker,
                 "Price": price}
+        
+        input_doc_to_MongoDB(document)
+
+        return document
 
     except Exception as e:
         print(f"Error: {e}")
-
-def input_doc_to_MongoDB(document):
-
-    db = CLIENT['db1'] 
-    collection = db['cl1']  
-
-    document = parse_event(document)
-
-    result = collection.insert_one(document)
-
-    print(f"Document inserted with ID: {result.inserted_id}")
-
 
 
 def send_email(event, email: str) -> None:
@@ -94,11 +97,9 @@ def send_email(event, email: str) -> None:
 
 def lambda_handler(event, context) -> dict:
 
-    input_doc_to_MongoDB(parse_event(event))
-
     try:
         for email in EMAILS:
-            send_email(str(parse_event(event)), email)
+            send_email(str(parse_event(str(event))), email)
 
         return {"statusCode": 200, "body": "Notification sent."}
 
