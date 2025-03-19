@@ -108,12 +108,11 @@ def send_email(event, email: str) -> None:
 def lambda_handler(event, context) -> dict:
 
     try:
+        document = str(parse_event(json.dumps(event)))
+
+        print("Document passed to send_email: ", document)
+
         for email in EMAILS:
-
-            document = str(parse_event(json.dumps(event)))
-                           
-            print("Document passed to sned_email: ", document)
-
             send_email(document, email)
 
         return {"statusCode": 200, "body": "Notification sent."}
