@@ -35,10 +35,10 @@ def extract_key(key_val, body_content):
 
 def input_doc_to_MongoDB(document):
 
+    print(document)
+
     db = CLIENT['db1'] 
     collection = db['cl1']  
-
-    document = parse_event(document)
 
     result = collection.insert_one(document)
 
@@ -46,12 +46,16 @@ def input_doc_to_MongoDB(document):
 
 def parse_event(input_string):
     pattern = r"'body': '{(.*?)}'"
+
+    print("input_string: ", input_string)
     
     match = re.search(pattern, input_string)
     
     try:
 
         body_content = match.group(1)
+
+        print("body_content: ", body_content)
 
         body_content += ','
 
@@ -60,10 +64,17 @@ def parse_event(input_string):
         ticker = extract_key("Ticker", body_content)
         price = extract_key("Price", body_content)
 
+        print("signal: ", signal)
+        print("time: ", time)
+        print("ticker: ", ticker)
+        print("price: ", price)
+
         document = {"Signal": signal, 
                 "Time": time,
                 "Ticker": ticker,
                 "Price": price}
+
+        print("final document as string: ", str(document))
         
         input_doc_to_MongoDB(document)
 
@@ -99,7 +110,8 @@ def lambda_handler(event, context) -> dict:
 
     try:
         for email in EMAILS:
-            send_email(str(parse_event(str(event))), email)
+            send_email(str(json.dumps(event)), email)
+            # send_email(str(parse_event(str(event))), email)
 
         return {"statusCode": 200, "body": "Notification sent."}
 
