@@ -8,7 +8,8 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
 
-EMAILS= ["darius.iavorschi@gmail.com", "robertcosta378@gmail.com", "burkettj2486@gmail.com"]
+# EMAILS= ["darius.iavorschi@gmail.com", "robertcosta378@gmail.com", "burkettj2486@gmail.com"]
+EMAILS= ["darius.iavorschi@gmail.com"]
 
 URI = "mongodb+srv://dariusiavorschi:rge3zdZplVgaDM5j@cluster0.i5iph.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
@@ -86,7 +87,9 @@ def send_email(event, email: str) -> None:
     email_receiver = email
 
     subject = 'Update'
-    body = str(event)
+    body = event
+
+    print("email body: ", body)
 
     em = EmailMessage()
     em['From'] = email_sender
@@ -106,8 +109,12 @@ def lambda_handler(event, context) -> dict:
 
     try:
         for email in EMAILS:
-            # send_email(str(json.dumps(event)), email)
-            send_email(str(parse_event(json.dumps(event))), email)
+
+            document = str(parse_event(json.dumps(event)))
+                           
+            print("Document passed to sned_email: ", document)
+
+            send_email(document, email)
 
         return {"statusCode": 200, "body": "Notification sent."}
 
