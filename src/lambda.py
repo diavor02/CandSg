@@ -44,17 +44,12 @@ def input_doc_to_MongoDB(document):
 
     print(f"Document inserted with ID: {result.inserted_id}")
 
-def parse_event(input_string):
-    pattern = r'"body": "{(.*?)}"'
 
-    print("input_string: ", input_string)
+def parse_event(json_obj):
     
-    match = re.search(pattern, input_string)
+    body_content = json.loads(json_obj)["body"]
     
     try:
-
-        body_content = match.group(1)
-
         print("body_content: ", body_content)
 
         body_content += ','
@@ -111,7 +106,7 @@ def lambda_handler(event, context) -> dict:
     try:
         for email in EMAILS:
             # send_email(str(json.dumps(event)), email)
-            send_email(str(parse_event(str(event))), email)
+            send_email(str(parse_event(json.dumps(event))), email)
 
         return {"statusCode": 200, "body": "Notification sent."}
 
