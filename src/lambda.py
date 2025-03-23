@@ -1,27 +1,29 @@
 import re
-import json
 import pandas as pd
 import smtplib
 import ssl
 from email.message import EmailMessage
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+import json
+import boto3
+import uuid
 
 
 # EMAILS= ["darius.iavorschi@gmail.com", "robertcosta378@gmail.com", "burkettj2486@gmail.com"]
+
+
+# URI = "mongodb+srv://dariusiavorschi:rge3zdZplVgaDM5j@cluster0.i5iph.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
+# CLIENT = MongoClient(URI, server_api=ServerApi('1'))
+
+# try:
+#     CLIENT.admin.command('ping')
+#     print("Pinged your deployment. You successfully connected to MongoDB!")
+# except Exception as e:
+#     print(e)
+
 EMAILS= ["darius.iavorschi@gmail.com"]
-
-URI = "mongodb+srv://dariusiavorschi:rge3zdZplVgaDM5j@cluster0.i5iph.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-
-CLIENT = MongoClient(URI, server_api=ServerApi('1'))
-
-try:
-    CLIENT.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print(e)
-
-
 
 def extract_key(key_val, body_content):
     pattern = fr"{key_val}:(.*?),"
@@ -35,23 +37,28 @@ def extract_key(key_val, body_content):
 
     return key
 
-def input_doc_to_MongoDB(document):
+def input_doc_to_dynamoDB(data):
 
-    print(document)
+    print(data)
 
-    db = CLIENT['db1'] 
-    collection = db['cl1']  
+    try:
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('LambdaOutputTable')
 
-    result = collection.insert_one(document)
+        table.put_item(Item=data)
 
-    print(f"Document inserted with ID: {result.inserted_id}")
+        print(f"Document inserted with ID: {data["id"]}")
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"Failed to extract the text": ""}
 
 
-def parse_event(json_obj):
-    
-    body_content = json.loads(json_obj)["body"]
+def parse_event(event):
     
     try:
+        body_content = event["body"]
+
         print("body_content: ", body_content)
 
         body_content += ','
@@ -66,19 +73,25 @@ def parse_event(json_obj):
         print("ticker: ", ticker)
         print("price: ", price)
 
-        document = {"Signal": signal, 
-                "Time": time,
-                "Ticker": ticker,
-                "Price": price}
+        item_id = str(uuid.uuid4())
+
+        document = {
+            "id": item_id,
+            "signal": signal, 
+            "time": time,
+            "ticker": ticker,
+            "price": price
+        }
 
         print("final document as string: ", str(document))
         
-        input_doc_to_MongoDB(document)
+        input_doc_to_dynamoDB(document)
 
         return document
 
     except Exception as e:
         print(f"Error: {e}")
+        return {"Failed to extract the text": ""}
 
 
 def send_email(event, email: str) -> None:
@@ -108,7 +121,7 @@ def send_email(event, email: str) -> None:
 def lambda_handler(event, context) -> dict:
 
     try:
-        document = str(parse_event(json.dumps(event)))
+        document = str(parse_event(event))
 
         print("Document passed to send_email: ", document)
 
