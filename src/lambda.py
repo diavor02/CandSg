@@ -62,7 +62,7 @@ def parse_event(event):
         body_content += ','
 
         signal = extract_key("Signal", body_content)
-        time = extract_key("Time", body_content) - '}'
+        time = extract_key("Time", body_content).strip('}')
         ticker = extract_key("Ticker", body_content)
         price = extract_key("Price", body_content)
 
