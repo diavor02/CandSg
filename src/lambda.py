@@ -47,7 +47,7 @@ def input_doc_to_dynamoDB(data):
 
         table.put_item(Item=data)
 
-        print(f"Document inserted with ID: {data["id"]}")
+        print(f"Document inserted with ID: {data['id']}")
 
     except Exception as e:
         print(f"Error: {e}")
