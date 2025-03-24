@@ -10,7 +10,7 @@ import boto3
 import uuid
 
 
-# EMAILS= ["darius.iavorschi@gmail.com", "robertcosta378@gmail.com", "burkettj2486@gmail.com"]
+EMAILS= ["darius.iavorschi@gmail.com", "robertcosta378@gmail.com", "burkettj2486@gmail.com"]
 
 
 # URI = "mongodb+srv://dariusiavorschi:rge3zdZplVgaDM5j@cluster0.i5iph.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -22,8 +22,6 @@ import uuid
 #     print("Pinged your deployment. You successfully connected to MongoDB!")
 # except Exception as e:
 #     print(e)
-
-EMAILS= ["darius.iavorschi@gmail.com"]
 
 def extract_key(key_val, body_content):
     pattern = fr"{key_val}:(.*?),"
@@ -64,7 +62,7 @@ def parse_event(event):
         body_content += ','
 
         signal = extract_key("Signal", body_content)
-        time = extract_key("Time", body_content)
+        time = extract_key("Time", body_content) - '}'
         ticker = extract_key("Ticker", body_content)
         price = extract_key("Price", body_content)
 
